@@ -1,31 +1,16 @@
-/*"use client";
-
-import { auth } from "@/lib/firebase";
-
-export default function HomePage() {
-  return (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-4">
-      <h1 className="text-4xl font-bold">
-        JobFuse
-      </h1>
-
-      <p className="text-gray-600">
-        Firebase Connected Successfully
-      </p>
-
-      <p className="text-sm text-gray-500">
-        Auth Ready: {auth ? "YES" : "NO"}
-      </p>
-    </main>
-  );
-}
-  */
-
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import JobCard from "@/components/JobCard";
+
+import SearchBar from "@/components/SearchBar";
+
+import useDebounce from "@/hooks/useDebounce";
 
 import {
   getActiveJobs,
@@ -33,15 +18,32 @@ import {
 
 export default function HomePage() {
 
+  // Jobs
   const [jobs, setJobs] =
     useState([]);
 
+  // Search input
+  const [searchTerm,
+    setSearchTerm] =
+    useState("");
+
+  // Debounced search
+  const debouncedSearch =
+    useDebounce(
+      searchTerm,
+      300
+    );
+
+  // UI states
   const [loading, setLoading] =
     useState(true);
 
   const [error, setError] =
     useState("");
 
+  /**
+   * Load jobs
+   */
   useEffect(() => {
 
     async function loadJobs() {
@@ -70,6 +72,43 @@ export default function HomePage() {
     loadJobs();
 
   }, []);
+
+  /**
+   * Filtered jobs
+   */
+  const filteredJobs =
+    useMemo(() => {
+
+      // Empty search
+      if (!debouncedSearch.trim()) {
+        return jobs;
+      }
+
+      const keyword =
+        debouncedSearch.toLowerCase();
+
+      return jobs.filter((job) => {
+
+        return (
+          job.title
+            ?.toLowerCase()
+            .includes(keyword)
+
+          ||
+
+          job.description
+            ?.toLowerCase()
+            .includes(keyword)
+
+          ||
+
+          job.requirements
+            ?.toLowerCase()
+            .includes(keyword)
+        );
+      });
+
+    }, [jobs, debouncedSearch]);
 
   // Loading state
   if (loading) {
@@ -103,7 +142,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto">
 
         {/* Hero */}
-        <div className="mb-10 text-center">
+        <div className="text-center mb-10">
 
           <h1 className="text-5xl font-bold mb-4">
             Find Your Next Opportunity
@@ -114,7 +153,13 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Empty State */}
+        {/* Search */}
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
+
+        {/* No Jobs */}
         {jobs.length === 0 ? (
 
           <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
@@ -128,12 +173,26 @@ export default function HomePage() {
             </p>
           </div>
 
+        ) : filteredJobs.length === 0 ? (
+
+          /* No Search Results */
+          <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
+
+            <h2 className="text-2xl font-bold mb-2">
+              No Matching Jobs
+            </h2>
+
+            <p className="text-gray-600">
+              Try a different keyword.
+            </p>
+          </div>
+
         ) : (
 
           /* Jobs Grid */
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-            {jobs.map((job) => (
+            {filteredJobs.map((job) => (
 
               <JobCard
                 key={job.id}
