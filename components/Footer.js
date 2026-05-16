@@ -54,7 +54,7 @@ export default function Footer() {
             <div className="flex flex-col gap-3 text-slate-600">
 
               <p>
-                Built by Emmanuel Isu
+                Built by [Rosales Tech Academy]
               </p>
 
               <p>
