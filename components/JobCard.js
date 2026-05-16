@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  ArrowRight,
+} from "lucide-react";
+
 export default function JobCard({
   job,
 }) {
@@ -7,31 +13,69 @@ export default function JobCard({
   return (
     <Link
       href={`/job/${job.id}`}
-      className="block bg-white rounded-2xl shadow-sm border hover:shadow-md transition p-6"
+      className="group"
     >
-      {/* Job Title */}
-      <h2 className="text-2xl font-bold text-black mb-3">
-        {job.title}
-      </h2>
+      <article className="card p-6 h-full flex flex-col justify-between">
 
-      {/* Description */}
-      <p className="text-gray-600 line-clamp-3 mb-4">
-        {job.description}
-      </p>
+        {/* Top */}
+        <div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between mt-6">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 mb-5">
 
-        {/* Status */}
-        <span className="inline-flex items-center rounded-full bg-green-100 text-green-700 text-sm px-3 py-1">
-          Active
-        </span>
+            <BriefcaseBusiness
+              size={16}
+            />
 
-        {/* CTA */}
-        <span className="text-black font-medium">
-          View Job →
-        </span>
-      </div>
+            Active Opportunity
+          </div>
+
+          {/* Title */}
+          <h2 className="text-2xl font-bold text-slate-900 group-hover:text-blue-600 transition">
+
+            {job.title}
+          </h2>
+
+          {/* Description */}
+          <p className="mt-4 text-slate-600 line-clamp-3">
+
+            {job.description}
+          </p>
+        </div>
+
+        {/* Bottom */}
+        <div className="mt-8">
+
+          {/* Meta */}
+          <div className="flex items-center gap-2 text-sm text-slate-500 mb-5">
+
+            <CalendarDays
+              size={16}
+            />
+
+            <span>
+              Recently Posted
+            </span>
+          </div>
+
+          {/* CTA */}
+          <div className="flex items-center justify-between">
+
+            <span className="font-semibold text-blue-600">
+
+              View Details
+            </span>
+
+            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition">
+
+              <ArrowRight
+                size={18}
+                className="text-blue-600 group-hover:text-white transition"
+              />
+            </div>
+          </div>
+        </div>
+      </article>
     </Link>
   );
 }

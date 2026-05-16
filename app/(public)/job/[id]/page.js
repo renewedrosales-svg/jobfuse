@@ -5,16 +5,22 @@ import {
   useState,
 } from "react";
 
-import Link from "next/link";
-
 import {
   useParams,
+  notFound,
 } from "next/navigation";
 
 import {
   getJob,
-  reportJob,
 } from "@/lib/firestore";
+
+import {
+  Mail,
+  Phone,
+  ShieldAlert,
+  CalendarDays,
+  BriefcaseBusiness,
+} from "lucide-react";
 
 import ReportModal
 from "@/components/ReportModal";
@@ -27,15 +33,12 @@ export default function JobDetailPage() {
   const [job, setJob] =
     useState(null);
 
-  const [loading, setLoading] =
+  const [loading,
+    setLoading] =
     useState(true);
 
   const [reportOpen,
     setReportOpen] =
-    useState(false);
-
-  const [reported,
-    setReported] =
     useState(false);
 
   /**
@@ -51,6 +54,11 @@ export default function JobDetailPage() {
           await getJob(
             params.id
           );
+
+        if (!data) {
+
+          notFound();
+        }
 
         setJob(data);
 
@@ -69,167 +77,190 @@ export default function JobDetailPage() {
   }, [params.id]);
 
   /**
-   * Submit report
+   * Loading UI
    */
-  async function handleReport(
-    reason
-  ) {
-
-    try {
-
-      await reportJob({
-        jobId: params.id,
-        reason,
-      });
-
-      setReported(true);
-
-      setReportOpen(false);
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(
-        "Failed to submit report."
-      );
-    }
-  }
-
-  // Loading
   if (loading) {
 
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="section">
 
-        <p>
-          Loading job...
-        </p>
+        <div className="container-app">
 
+          <div className="card p-10 animate-pulse h-[500px]" />
+        </div>
       </main>
     );
   }
 
-  // Missing job
+  /**
+   * Job not found
+   */
   if (!job) {
 
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="section">
 
-        <div className="text-center">
+        <div className="container-app">
 
-          <h1 className="text-4xl font-bold mb-4">
-            Job Not Found
-          </h1>
+          <div className="card-blue p-14 text-center">
 
-          <Link
-            href="/"
-            className="text-blue-600"
-          >
-            Back Home
-          </Link>
+            <h1 className="text-3xl font-bold mb-4">
+              Job Not Found
+            </h1>
+
+            <p>
+              This job may have been removed or is no longer active.
+            </p>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <>
-      <main className="min-h-screen bg-gray-100 px-4 py-10">
+    <main className="section">
 
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8">
+      <div className="container-app">
 
-          {/* Title */}
-          <h1 className="text-5xl font-bold mb-6">
-            {job.title}
-          </h1>
+        <div className="grid lg:grid-cols-[1fr_360px] gap-10">
 
-          {/* Description */}
-          <section className="mb-10">
+          {/* LEFT CONTENT */}
+          <div>
 
-            <h2 className="text-2xl font-semibold mb-3">
-              Job Description
-            </h2>
+            {/* Header Card */}
+            <div className="card-blue p-8 lg:p-10">
 
-            <p className="text-gray-700 whitespace-pre-line leading-8">
-              {job.description}
-            </p>
-          </section>
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-600 text-white px-4 py-2 text-sm font-medium mb-6">
 
-          {/* Requirements */}
-          <section className="mb-10">
+                <BriefcaseBusiness
+                  size={16}
+                />
 
-            <h2 className="text-2xl font-semibold mb-3">
-              Requirements
-            </h2>
+                Active Opportunity
+              </div>
 
-            <p className="text-gray-700 whitespace-pre-line leading-8">
-              {job.requirements}
-            </p>
-          </section>
+              <h1 className="text-4xl lg:text-5xl font-black leading-tight text-slate-900">
 
-          {/* Contact */}
-          <section className="mb-8">
+                {job.title}
+              </h1>
 
-            <h2 className="text-2xl font-semibold mb-4">
-              Contact Employer
-            </h2>
+              <div className="flex items-center gap-3 mt-6 text-slate-500">
 
-            <div className="flex flex-col sm:flex-row gap-4">
+                <CalendarDays
+                  size={18}
+                />
 
-              <a
-                href={`mailto:${job.contactEmail}`}
-                className="bg-black text-white px-6 py-4 rounded-lg text-center"
-              >
-                Email Employer
-              </a>
-
-              {job.contactPhone && (
-
-                <a
-                  href={`tel:${job.contactPhone}`}
-                  className="border border-black px-6 py-4 rounded-lg text-center"
-                >
-                  Call Employer
-                </a>
-              )}
+                <span>
+                  Recently Posted
+                </span>
+              </div>
             </div>
-          </section>
 
-          {/* Report */}
-          <section className="border-t pt-6">
+            {/* Description */}
+            <div className="card p-8 mt-8">
 
-            {reported ? (
+              <h2 className="text-2xl font-bold mb-5">
+                Job Description
+              </h2>
 
-              <p className="text-green-600 font-medium">
-                Report submitted successfully.
+              <p className="text-slate-600 whitespace-pre-wrap">
+
+                {job.description}
               </p>
+            </div>
 
-            ) : (
+            {/* Requirements */}
+            <div className="card p-8 mt-8">
 
-              <button
-                onClick={() =>
-                  setReportOpen(true)
-                }
-                className="text-red-600 font-medium"
-              >
-                Report This Job
-              </button>
-            )}
-          </section>
+              <h2 className="text-2xl font-bold mb-5">
+                Requirements
+              </h2>
+
+              <p className="text-slate-600 whitespace-pre-wrap">
+
+                {job.requirements}
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT SIDEBAR */}
+          <aside>
+
+            <div className="sticky top-28 space-y-6">
+
+              {/* Contact Card */}
+              <div className="card p-6">
+
+                <h3 className="text-xl font-bold mb-5">
+                  Contact Employer
+                </h3>
+
+                <div className="space-y-4">
+
+                  {/* Email */}
+                  <a
+                    href={`mailto:${job.contactEmail}`}
+                    className="btn-primary w-full flex items-center justify-center gap-2"
+                  >
+                    <Mail size={18} />
+
+                    Email Employer
+                  </a>
+
+                  {/* Phone */}
+                  {job.contactPhone && (
+
+                    <a
+                      href={`tel:${job.contactPhone}`}
+                      className="btn-secondary w-full flex items-center justify-center gap-2"
+                    >
+                      <Phone size={18} />
+
+                      Call Employer
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Report Card */}
+              <div className="card p-6 border-red-100">
+
+                <h3 className="text-lg font-bold mb-3 text-slate-900">
+
+                  Report Listing
+                </h3>
+
+                <p className="text-sm text-slate-500 mb-5">
+
+                  Help keep JobFuse safe by reporting spam or inappropriate listings.
+                </p>
+
+                <button
+                  onClick={() =>
+                    setReportOpen(true)
+                  }
+                  className="btn-danger w-full flex items-center justify-center gap-2"
+                >
+                  <ShieldAlert
+                    size={18}
+                  />
+
+                  Report Job
+                </button>
+              </div>
+            </div>
+          </aside>
         </div>
-      </main>
+      </div>
 
-      {/* Modal */}
+      {/* Report Modal */}
       <ReportModal
         isOpen={reportOpen}
         onClose={() =>
           setReportOpen(false)
         }
-        onSubmit={
-          handleReport
-        }
+        jobId={job.id}
       />
-    </>
+    </main>
   );
 }

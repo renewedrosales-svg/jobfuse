@@ -1,26 +1,469 @@
 @import "tailwindcss";
 
+/* =========================================
+   ROOT DESIGN TOKENS
+========================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+  /* Backgrounds */
+  --background: #f4f8fc;
+  --background-secondary: #edf4ff;
+
+  /* Text */
+  --foreground: #0f172a;
+  --muted: #64748b;
+
+  /* Cards */
+  --card: #ffffff;
+  --card-blue: #eff6ff;
+
+  /* Primary Brand */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #dbeafe;
+
+  /* Secondary */
+  --secondary: #0f172a;
+  --secondary-hover: #1e293b;
+
+  /* Borders */
+  --border: #dbe4f0;
+
+  /* States */
+  --success-bg: #dcfce7;
+  --success-text: #14e965;
+
+  --danger-bg: #fee2e2;
+  --danger-text: #fc0707;
+
+  --warning-bg: #fef3c7;
+  --warning-text: #fa6407;
+
+  /* Radius */
+  --radius-sm: 0.9rem;
+  --radius-md: 1.2rem;
+  --radius-lg: 1.6rem;
+
+  /* Shadows */
+  --shadow-sm:
+    0 1px 2px rgba(0,0,0,0.04);
+
+  --shadow-md:
+    0 6px 24px rgba(37,99,235,0.08);
+
+  --shadow-lg:
+    0 18px 40px rgba(37,99,235,0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* =========================================
+   RESET
+========================================= */
+
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  margin: 0;
+
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      to bottom,
+      #ffffff,
+      #f4f8fc
+    );
+
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  font-family:
+    Inter,
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+/* =========================================
+   TYPOGRAPHY
+========================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+
+  letter-spacing: -0.03em;
+
+  line-height: 1.1;
+
+  font-weight: 700;
+}
+
+p {
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* =========================================
+   LAYOUT UTILITIES
+========================================= */
+
+.container-app {
+  width: 100%;
+  max-width: 1280px;
+
+  margin-inline: auto;
+
+  padding-inline: 1rem;
+}
+
+.section {
+  padding-block: 5rem;
+}
+
+/* =========================================
+   CARDS
+========================================= */
+
+.card {
+  background: var(--card);
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    var(--radius-md);
+
+  box-shadow:
+    var(--shadow-sm);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    var(--shadow-md);
+
+  border-color:
+    #bfdbfe;
+}
+
+/* Blue Accent Card */
+.card-blue {
+  background:
+    linear-gradient(
+      135deg,
+      #eff6ff,
+      #ffffff
+    );
+
+  border:
+    1px solid #bfdbfe;
+
+  border-radius:
+    var(--radius-md);
+
+  box-shadow:
+    var(--shadow-sm);
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      #3b82f6
+    );
+
+  color: white;
+
+  border: none;
+
+  border-radius:
+    var(--radius-sm);
+
+  padding:
+    0.95rem 1.4rem;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    all 0.2s ease;
+
+  box-shadow:
+    0 8px 20px rgba(37,99,235,0.20);
+}
+
+.btn-primary:hover {
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary-hover),
+      #2563eb
+    );
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(37,99,235,0.28);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: white;
+
+  color: var(--foreground);
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    var(--radius-sm);
+
+  padding:
+    0.95rem 1.4rem;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background:
+    #f8fbff;
+
+  border-color:
+    #93c5fd;
+}
+
+/* Danger Button */
+.btn-danger {
+  background:
+    linear-gradient(
+      135deg,
+      #dc2626,
+      #ef4444
+    );
+
+  color: white;
+
+  border: none;
+
+  border-radius:
+    var(--radius-sm);
+
+  padding:
+    0.95rem 1.4rem;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    all 0.2s ease;
+}
+
+.btn-danger:hover {
+  transform:
+    translateY(-2px);
+}
+
+/* =========================================
+   INPUTS
+========================================= */
+
+.input-modern {
+  width: 100%;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    var(--radius-sm);
+
+  padding:
+    1rem;
+
+  background: white;
+
+  font-size: 1rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.input-modern:focus {
+  outline: none;
+
+  border-color:
+    #60a5fa;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 0 0 5px
+    rgba(37,99,235,0.10);
+}
+
+.textarea-modern {
+  width: 100%;
+
+  min-height: 160px;
+
+  resize: vertical;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    var(--radius-sm);
+
+  padding:
+    1rem;
+
+  background: white;
+
+  font-size: 1rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.textarea-modern:focus {
+  outline: none;
+
+  border-color:
+    #60a5fa;
+
+  box-shadow:
+    0 0 0 5px
+    rgba(37,99,235,0.10);
+}
+
+/* =========================================
+   BADGES
+========================================= */
+
+.badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding:
+    0.4rem 0.85rem;
+
+  border-radius:
+    999px;
+
+  font-size: 0.85rem;
+
+  font-weight: 600;
+}
+
+.badge-success {
+  background:
+    var(--success-bg);
+
+  color:
+    var(--success-text);
+}
+
+.badge-danger {
+  background:
+    var(--danger-bg);
+
+  color:
+    var(--danger-text);
+}
+
+.badge-warning {
+  background:
+    var(--warning-bg);
+
+  color:
+    var(--warning-text);
+}
+
+/* =========================================
+   GLASS EFFECTS
+========================================= */
+
+.glass {
+  background:
+    rgba(255,255,255,0.7);
+
+  backdrop-filter:
+    blur(14px);
+
+  border:
+    1px solid rgba(255,255,255,0.4);
+}
+
+/* =========================================
+   SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background:
+    #eff6ff;
+}
+
+::-webkit-scrollbar-thumb {
+  background:
+    #93c5fd;
+
+  border-radius:
+    999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background:
+    #60a5fa;
 }

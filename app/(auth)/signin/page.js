@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
+import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 
-import {
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { signinEmployer } from "@/lib/auth";
 
-import { auth } from "@/lib/firebase";
+import AuthLayout from "@/components/AuthLayout";
 
 export default function SigninPage() {
 
@@ -26,63 +26,84 @@ export default function SigninPage() {
   const [error, setError] =
     useState("");
 
+  /**
+   * Handle signin
+   */
   async function handleSignin(e) {
 
     e.preventDefault();
 
+    setLoading(true);
+    setError("");
+
     try {
 
-      setLoading(true);
-      setError("");
-
-      // Sign in directly
-      const userCredential =
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
-
       const user =
-        userCredential.user;
+        await signinEmployer({
+          email,
+          password,
+        });
 
-      // Reload auth state
+      // Refresh Firebase user
       await user.reload();
 
-      // IMPORTANT:
-      // Get fresh Firebase user
-      const currentUser =
-        auth.currentUser;
-
-      console.log(
-        "CURRENT USER:",
-        currentUser
-      );
+      const refreshedUser =
+        user.auth.currentUser;
 
       // Email not verified
       if (
-        !currentUser?.emailVerified
+        !refreshedUser?.emailVerified
       ) {
 
-        router.push("/verify-email");
+        router.push(
+          "/verify-email"
+        );
 
         return;
       }
 
       // Success
-      router.push("/dashboard");
+      router.push(
+        "/dashboard"
+      );
 
     } catch (err) {
 
-      console.error(
-        "SIGNIN ERROR:",
-        err
-      );
+      console.error(err);
 
-      setError(
-        err.message ||
-        "Failed to sign in"
-      );
+      // Better Firebase errors
+      switch (err.code) {
+
+        case "auth/invalid-credential":
+          setError(
+            "Invalid email or password."
+          );
+          break;
+
+        case "auth/user-not-found":
+          setError(
+            "No account found with this email."
+          );
+          break;
+
+        case "auth/wrong-password":
+          setError(
+            "Incorrect password."
+          );
+          break;
+
+        case "auth/too-many-requests":
+          setError(
+            "Too many attempts. Please try again later."
+          );
+          break;
+
+        default:
+          setError(
+            err.message ||
+            "Signin failed."
+          );
+      }
 
     } finally {
 
@@ -91,70 +112,105 @@ export default function SigninPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <AuthLayout
+      title="Welcome Back"
+      subtitle="Sign in to manage your job listings and opportunities."
+    >
 
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+      {/* Error Message */}
+      {error && (
 
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Employer Sign In
-        </h1>
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-100 px-5 py-4 text-red-700">
 
-        {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-lg text-sm mb-4">
-            {error}
+          {error}
+        </div>
+      )}
+
+      {/* Form */}
+      <form
+        onSubmit={handleSignin}
+        className="space-y-6"
+      >
+
+        {/* Email */}
+        <div>
+
+          <label className="mb-3 block font-semibold">
+
+            Email Address
+          </label>
+
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) =>
+              setEmail(
+                e.target.value
+              )
+            }
+            className="input-modern"
+            placeholder="you@example.com"
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+
+          <label className="mb-3 block font-semibold">
+
+            Password
+          </label>
+
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            className="input-modern"
+            placeholder="••••••••"
+          />
+
+          {/* Forgot Password */}
+          <div className="mt-3 flex justify-end">
+
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+            >
+              Forgot Password?
+            </Link>
           </div>
-        )}
+        </div>
 
-        <form
-          onSubmit={handleSignin}
-          className="space-y-4"
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full disabled:opacity-70"
         >
-          {/* Email */}
-          <div>
-            <label className="block mb-1 font-medium">
-              Email
-            </label>
+          {loading
+            ? "Signing In..."
+            : "Sign In"}
+        </button>
 
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              className="w-full border rounded-lg px-4 py-3"
-            />
-          </div>
+        {/* Signup Link */}
+        <p className="text-center text-slate-600">
 
-          {/* Password */}
-          <div>
-            <label className="block mb-1 font-medium">
-              Password
-            </label>
+          Don’t have an account?{" "}
 
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) =>
-                setPassword(e.target.value)
-              }
-              className="w-full border rounded-lg px-4 py-3"
-            />
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg"
+          <Link
+            href="/signup"
+            className="font-semibold text-blue-600 hover:underline"
           >
-            {loading
-              ? "Signing In..."
-              : "Sign In"}
-          </button>
-        </form>
-      </div>
-    </main>
+            Create One
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 }

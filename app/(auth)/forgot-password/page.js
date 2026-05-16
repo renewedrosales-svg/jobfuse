@@ -7,70 +7,70 @@ import {
 import Link from "next/link";
 
 import {
-  useRouter,
-} from "next/navigation";
+  sendPasswordResetEmail,
+} from "firebase/auth";
 
 import {
-  signupEmployer,
-} from "@/lib/auth";
+  auth,
+} from "@/lib/firebase";
 
 import AuthLayout
 from "@/components/AuthLayout";
 
-export default function SignupPage() {
-
-  const router =
-    useRouter();
-
-  const [companyName,
-    setCompanyName] =
-    useState("");
+export default function ForgotPasswordPage() {
 
   const [email,
     setEmail] =
-    useState("");
-
-  const [password,
-    setPassword] =
     useState("");
 
   const [loading,
     setLoading] =
     useState(false);
 
+  const [success,
+    setSuccess] =
+    useState("");
+
   const [error,
     setError] =
     useState("");
 
   /**
-   * Signup
+   * Send reset email
    */
-  async function handleSignup(e) {
+  async function handleReset(e) {
 
     e.preventDefault();
 
     setLoading(true);
     setError("");
+    setSuccess("");
 
     try {
 
-      await signupEmployer({
-        companyName,
-        email,
-        password,
-      });
-
-      router.push(
-        "/verify-email"
+      await sendPasswordResetEmail(
+        auth,
+        email
       );
+
+      setSuccess(
+        "Password reset email sent successfully."
+      );
+
+      setEmail("");
 
     } catch (err) {
 
-      console.error(err);
+/*     console.error(err); */
+        console.error(
+          "Password Reset Error:",
+          err.code,
+          err.message
+        );
 
       setError(
         err.message ||
-        "Signup failed"
+        "Failed to send reset email."
       );
 
     } finally {
@@ -81,9 +81,18 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
-      title="Create Account"
-      subtitle="Start hiring talented professionals through JobFuse."
+      title="Reset Password"
+      subtitle="Enter your email address and we'll send you a password reset link."
     >
+
+      {/* Success */}
+      {success && (
+
+        <div className="bg-green-100 border border-green-200 text-green-700 rounded-2xl px-5 py-4 mb-6">
+
+          {success}
+        </div>
+      )}
 
       {/* Error */}
       {error && (
@@ -96,31 +105,10 @@ export default function SignupPage() {
 
       <form
         onSubmit={
-          handleSignup
+          handleReset
         }
         className="space-y-6"
       >
-
-        {/* Company */}
-        <div>
-
-          <label className="block font-semibold mb-3">
-
-            Company Name
-          </label>
-
-          <input
-            type="text"
-            value={companyName}
-            onChange={(e) =>
-              setCompanyName(
-                e.target.value
-              )
-            }
-            className="input-modern"
-            placeholder="Acme Inc"
-          />
-        </div>
 
         {/* Email */}
         <div>
@@ -144,29 +132,6 @@ export default function SignupPage() {
           />
         </div>
 
-        {/* Password */}
-        <div>
-
-          <label className="block font-semibold mb-3">
-
-            Password
-          </label>
-
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            className="input-modern"
-            placeholder="••••••••"
-          />
-        </div>
-
         {/* Submit */}
         <button
           type="submit"
@@ -174,14 +139,14 @@ export default function SignupPage() {
           className="btn-primary w-full"
         >
           {loading
-            ? "Creating Account..."
-            : "Create Employer Account"}
+            ? "Sending..."
+            : "Send Reset Link"}
         </button>
 
-        {/* Link */}
+        {/* Back */}
         <p className="text-center text-slate-600">
 
-          Already have an account?{" "}
+          Remember your password?{" "}
 
           <Link
             href="/signin"

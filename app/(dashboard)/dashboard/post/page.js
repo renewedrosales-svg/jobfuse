@@ -1,86 +1,99 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+} from "next/navigation";
 
-import { auth } from "@/lib/firebase";
+import {
+  auth,
+} from "@/lib/firebase";
 
-import { createJob } from "@/lib/firestore";
+import {
+  createJob,
+} from "@/lib/firestore";
 
 export default function PostJobPage() {
 
-  const router = useRouter();
+  const router =
+    useRouter();
 
-  // Form states
-  const [title, setTitle] =
-    useState("");
+  const [form,
+    setForm] =
+    useState({
+      title: "",
+      description: "",
+      requirements: "",
+      contactEmail: "",
+      contactPhone: "",
+    });
 
-  const [description, setDescription] =
-    useState("");
-
-  const [requirements, setRequirements] =
-    useState("");
-
-  const [contactEmail, setContactEmail] =
-    useState("");
-
-  const [contactPhone, setContactPhone] =
-    useState("");
-
-  // UI states
-  const [loading, setLoading] =
+  const [loading,
+    setLoading] =
     useState(false);
 
-  const [error, setError] =
+  const [error,
+    setError] =
     useState("");
 
   /**
-   * Handle job posting
+   * Handle input
    */
-  async function handlePostJob(e) {
+  function handleChange(e) {
+
+    setForm({
+      ...form,
+      [e.target.name]:
+        e.target.value,
+    });
+  }
+
+  /**
+   * Submit form
+   */
+  async function handleSubmit(e) {
 
     e.preventDefault();
 
+    setLoading(true);
+    setError("");
+
     try {
 
-      setLoading(true);
-      setError("");
-
-      const currentUser =
+      const user =
         auth.currentUser;
 
-      // Safety check
-      if (!currentUser) {
-        throw new Error(
-          "You must be signed in."
+      if (!user) {
+
+        router.replace(
+          "/signin"
         );
+
+        return;
       }
 
-      // Create Firestore job
       await createJob({
+        ...form,
+
         employerId:
-          currentUser.uid,
+          user.uid,
 
-        title,
-        description,
-        requirements,
-
-        contactEmail,
-
-        contactPhone,
+        isActive: true,
       });
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      router.push(
+        "/dashboard"
+      );
 
     } catch (err) {
 
       console.error(err);
 
       setError(
-        err.message ||
-        "Failed to create job"
+        "Failed to create job."
       );
 
     } finally {
@@ -90,117 +103,155 @@ export default function PostJobPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 px-4 py-10">
+    <main className="section">
 
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8">
+      <div className="container-app max-w-4xl">
 
-        <h1 className="text-4xl font-bold mb-8">
-          Post a Job
-        </h1>
+        {/* Header */}
+        <div className="mb-10">
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+          <p className="text-blue-600 font-semibold mb-2">
 
+            Employer Dashboard
+          </p>
+
+          <h1 className="text-5xl font-black">
+
+            Post a New Job
+          </h1>
+
+          <p className="text-slate-600 mt-4 text-lg">
+
+            Create a professional listing and connect with talented candidates.
+          </p>
+        </div>
+
+        {/* Form */}
         <form
-          onSubmit={handlePostJob}
-          className="space-y-6"
+          onSubmit={
+            handleSubmit
+          }
+          className="card p-8 lg:p-10 space-y-8"
         >
+
+          {/* Error */}
+          {error && (
+
+            <div className="rounded-2xl bg-red-100 border border-red-200 px-5 py-4 text-red-700">
+
+              {error}
+            </div>
+          )}
+
           {/* Title */}
           <div>
-            <label className="block mb-2 font-medium">
+
+            <label className="block font-semibold mb-3">
+
               Job Title
             </label>
 
             <input
               type="text"
+              name="title"
               required
-              value={title}
-              onChange={(e) =>
-                setTitle(e.target.value)
+              value={form.title}
+              onChange={
+                handleChange
               }
+              className="input-modern"
               placeholder="Frontend Developer"
-              className="w-full border rounded-lg px-4 py-3"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block mb-2 font-medium">
+
+            <label className="block font-semibold mb-3">
+
               Job Description
             </label>
 
             <textarea
+              name="description"
               required
-              rows={6}
-              value={description}
-              onChange={(e) =>
-                setDescription(e.target.value)
+              rows={7}
+              value={
+                form.description
               }
+              onChange={
+                handleChange
+              }
+              className="input-modern resize-none"
               placeholder="Describe the role..."
-              className="w-full border rounded-lg px-4 py-3"
             />
           </div>
 
           {/* Requirements */}
           <div>
-            <label className="block mb-2 font-medium">
+
+            <label className="block font-semibold mb-3">
+
               Requirements
             </label>
 
             <textarea
+              name="requirements"
               required
-              rows={5}
-              value={requirements}
-              onChange={(e) =>
-                setRequirements(
-                  e.target.value
-                )
+              rows={6}
+              value={
+                form.requirements
               }
-              placeholder="Required skills..."
-              className="w-full border rounded-lg px-4 py-3"
+              onChange={
+                handleChange
+              }
+              className="input-modern resize-none"
+              placeholder="List required skills..."
             />
           </div>
 
-          {/* Contact Email */}
+          {/* Email */}
           <div>
-            <label className="block mb-2 font-medium">
+
+            <label className="block font-semibold mb-3">
+
               Contact Email
             </label>
 
             <input
               type="email"
+              name="contactEmail"
               required
-              value={contactEmail}
-              onChange={(e) =>
-                setContactEmail(
-                  e.target.value
-                )
+              value={
+                form.contactEmail
               }
-              placeholder="jobs@company.com"
-              className="w-full border rounded-lg px-4 py-3"
+              onChange={
+                handleChange
+              }
+              className="input-modern"
+              placeholder="hr@company.com"
             />
           </div>
 
-          {/* Contact Phone */}
+          {/* Phone */}
           <div>
-            <label className="block mb-2 font-medium">
+
+            <label className="block font-semibold mb-3">
+
               Contact Phone
             </label>
 
             <input
               type="text"
-              value={contactPhone}
-              onChange={(e) =>
-                setContactPhone(
-                  e.target.value
-                )
+              name="contactPhone"
+              value={
+                form.contactPhone
               }
+              onChange={
+                handleChange
+              }
+              className="input-modern"
               placeholder="+234..."
-              className="w-full border rounded-lg px-4 py-3"
             />
           </div>
 
@@ -208,11 +259,11 @@ export default function PostJobPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white py-4 rounded-lg hover:opacity-90 transition"
+            className="btn-primary w-full"
           >
             {loading
-              ? "Posting Job..."
-              : "Post Job"}
+              ? "Publishing Job..."
+              : "Publish Job"}
           </button>
         </form>
       </div>

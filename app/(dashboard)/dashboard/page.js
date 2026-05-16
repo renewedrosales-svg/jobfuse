@@ -8,28 +8,34 @@ import {
 import Link from "next/link";
 
 import {
+  useRouter,
+} from "next/navigation";
+
+import {
   onAuthStateChanged,
 } from "firebase/auth";
+
+import {
+  BriefcaseBusiness,
+  Plus,
+  Eye,
+} from "lucide-react";
 
 import {
   auth,
 } from "@/lib/firebase";
 
 import {
-  deleteJob,
   getEmployerJobs,
-  updateJob,
 } from "@/lib/firestore";
 
-import EmployerJobCard
-from "@/components/EmployerJobCard";
-
-import { useRouter }
-from "next/navigation";
+import JobCard
+from "@/components/JobCard";
 
 export default function DashboardPage() {
 
-  const router = useRouter();
+  const router =
+    useRouter();
 
   const [user, setUser] =
     useState(null);
@@ -37,134 +43,38 @@ export default function DashboardPage() {
   const [jobs, setJobs] =
     useState([]);
 
-  const [loading, setLoading] =
+  const [loading,
+    setLoading] =
     useState(true);
 
   /**
-   * Load employer jobs
+   * Load dashboard
    */
-  async function loadJobs(
-    employerId
-  ) {
-
-    try {
-
-      const jobsData =
-        await getEmployerJobs(
-          employerId
-        );
-
-      setJobs(jobsData);
-
-    } catch (err) {
-
-      console.error(err);
-    }
-  }
-
-  /**
-   * Delete job
-   */
-  async function handleDelete(
-    jobId
-  ) {
-
-    const confirmed =
-      window.confirm(
-        "Delete this job permanently?"
-      );
-
-    if (!confirmed) return;
-
-    try {
-
-      await deleteJob(jobId);
-
-      // Refresh jobs
-      setJobs((prev) =>
-        prev.filter(
-          (job) =>
-            job.id !== jobId
-        )
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(
-        "Failed to delete job."
-      );
-    }
-  }
-
-  /**
-   * Toggle active status
-   */
-  async function handleToggleStatus(
-    job
-  ) {
-
-    try {
-
-      await updateJob(
-        job.id,
-        {
-          isActive:
-            !job.isActive,
-        }
-      );
-
-      // Refresh local state
-      setJobs((prev) =>
-        prev.map((item) => {
-
-          if (
-            item.id === job.id
-          ) {
-
-            return {
-              ...item,
-              isActive:
-                !item.isActive,
-            };
-          }
-
-          return item;
-        })
-      );
-
-    } catch (err) {
-
-      console.error(err);
-
-      alert(
-        "Failed to update job."
-      );
-    }
-  }
-
   useEffect(() => {
 
     const unsubscribe =
       onAuthStateChanged(
         auth,
-        async (currentUser) => {
+        async (
+          currentUser
+        ) => {
 
           if (!currentUser) {
 
-            router.push(
+            router.replace(
               "/signin"
             );
 
             return;
           }
 
+          await currentUser.reload();
+
           if (
             !currentUser.emailVerified
           ) {
 
-            router.push(
+            router.replace(
               "/verify-email"
             );
 
@@ -173,12 +83,23 @@ export default function DashboardPage() {
 
           setUser(currentUser);
 
-          // Load jobs
-          await loadJobs(
-            currentUser.uid
-          );
+          try {
 
-          setLoading(false);
+            const data =
+              await getEmployerJobs(
+                currentUser.uid
+              );
+
+            setJobs(data);
+
+          } catch (err) {
+
+            console.error(err);
+
+          } finally {
+
+            setLoading(false);
+          }
         }
       );
 
@@ -187,91 +108,204 @@ export default function DashboardPage() {
 
   }, [router]);
 
-  // Loading
+  /**
+   * Loading UI
+   */
   if (loading) {
 
     return (
-      <main className="min-h-screen flex items-center justify-center">
+      <main className="section">
 
-        <p>
-          Loading dashboard...
-        </p>
+        <div className="container-app">
 
+          <div className="card p-10 animate-pulse h-[400px]" />
+
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 px-4 py-10">
+    <main className="section">
 
-      <div className="max-w-6xl mx-auto">
+      <div className="container-app">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
 
           <div>
 
-            <h1 className="text-4xl font-bold">
+            <p className="text-blue-600 font-semibold mb-2">
+
               Employer Dashboard
+            </p>
+
+            <h1 className="text-4xl lg:text-5xl font-black text-slate-900">
+
+              Welcome Back
             </h1>
 
-            <p className="text-gray-600 mt-2">
-              Logged in as:
-              {" "}
-              {user?.email}
+            <p className="text-slate-600 mt-3">
+
+              Manage your job listings and track opportunities.
             </p>
           </div>
 
-          {/* Post Job */}
           <Link
             href="/dashboard/post"
-            className="bg-black text-white px-6 py-3 rounded-lg text-center"
+            className="btn-primary flex items-center justify-center gap-2"
           >
+            <Plus size={20} />
+
             Post New Job
           </Link>
         </div>
 
-        {/* Empty State */}
-        {jobs.length === 0 ? (
+        {/* Stats */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
 
-          <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
+          {/* Total Jobs */}
+          <div className="card-blue p-6">
 
-            <h2 className="text-2xl font-bold mb-3">
-              No Jobs Yet
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-slate-500 text-sm">
+
+                  Total Jobs
+                </p>
+
+                <h2 className="text-4xl font-black mt-2">
+
+                  {jobs.length}
+                </h2>
+              </div>
+
+              <div className="h-14 w-14 rounded-2xl bg-blue-600 flex items-center justify-center">
+
+                <BriefcaseBusiness
+                  className="text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Active */}
+          <div className="card p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-slate-500 text-sm">
+
+                  Active Listings
+                </p>
+
+                <h2 className="text-4xl font-black mt-2">
+
+                  {
+                    jobs.filter(
+                      (job) =>
+                        job.isActive
+                    ).length
+                  }
+                </h2>
+              </div>
+
+              <div className="h-14 w-14 rounded-2xl bg-green-100 flex items-center justify-center">
+
+                <Eye
+                  className="text-green-600"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Closed */}
+          <div className="card p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <p className="text-slate-500 text-sm">
+
+                  Closed Jobs
+                </p>
+
+                <h2 className="text-4xl font-black mt-2">
+
+                  {
+                    jobs.filter(
+                      (job) =>
+                        !job.isActive
+                    ).length
+                  }
+                </h2>
+              </div>
+
+              <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center">
+
+                <BriefcaseBusiness
+                  className="text-red-600"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Jobs */}
+        <div>
+
+          <div className="flex items-center justify-between mb-8">
+
+            <h2 className="text-3xl font-bold">
+
+              Your Listings
             </h2>
-
-            <p className="text-gray-600 mb-6">
-              Start by posting your first job.
-            </p>
-
-            <Link
-              href="/dashboard/post"
-              className="bg-black text-white px-6 py-3 rounded-lg"
-            >
-              Post Job
-            </Link>
           </div>
 
-        ) : (
+          {/* Empty */}
+          {jobs.length === 0 && (
 
-          /* Jobs Grid */
-          <div className="grid gap-6 md:grid-cols-2">
+            <div className="card-blue p-14 text-center">
 
-            {jobs.map((job) => (
+              <h3 className="text-3xl font-bold mb-4">
 
-              <EmployerJobCard
-                key={job.id}
-                job={job}
-                onDelete={
-                  handleDelete
-                }
-                onToggleStatus={
-                  handleToggleStatus
-                }
-              />
-            ))}
-          </div>
-        )}
+                No Jobs Posted Yet
+              </h3>
+
+              <p className="text-slate-600 mb-8">
+
+                Start attracting candidates by creating your first job listing.
+              </p>
+
+              <Link
+                href="/dashboard/post"
+                className="btn-primary"
+              >
+                Post Your First Job
+              </Link>
+            </div>
+          )}
+
+          {/* Jobs Grid */}
+          {jobs.length > 0 && (
+
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+              {jobs.map((job) => (
+
+                <JobCard
+                  key={job.id}
+                  job={job}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
