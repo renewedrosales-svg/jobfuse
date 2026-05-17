@@ -17,12 +17,19 @@ import {
   BriefcaseBusiness,
 } from "lucide-react";
 
+import toast
+from "react-hot-toast";
+
 import {
   getJob,
+  reportJob,
 } from "@/lib/firestore";
 
 import ReportModal
 from "@/components/ReportModal";
+
+import JobDetailSkeleton
+from "@/components/JobDetailSkeleton";
 
 export default function JobDetailClient({
   jobId,
@@ -40,7 +47,7 @@ export default function JobDetailClient({
     useState(false);
 
   /**
-   * Load job
+   * Load Job
    */
   useEffect(() => {
 
@@ -54,6 +61,8 @@ export default function JobDetailClient({
         if (!data) {
 
           notFound();
+
+          return;
         }
 
         setJob(data);
@@ -61,6 +70,10 @@ export default function JobDetailClient({
       } catch (err) {
 
         console.error(err);
+
+        toast.error(
+          "Failed to load job"
+        );
 
       } finally {
 
@@ -73,7 +86,37 @@ export default function JobDetailClient({
   }, [jobId]);
 
   /**
-   * Loading
+   * Handle Report Submission
+   */
+  async function handleReport(
+    reason
+  ) {
+
+    try {
+
+      await reportJob({
+        jobId: job.id,
+        reason,
+      });
+
+      toast.success(
+        "Report submitted successfully"
+      );
+
+      setReportOpen(false);
+
+    } catch (err) {
+
+      console.error(err);
+
+      toast.error(
+        "Failed to submit report"
+      );
+    }
+  }
+
+  /**
+   * Loading State
    */
   if (loading) {
 
@@ -81,7 +124,7 @@ export default function JobDetailClient({
   }
 
   /**
-   * Missing job
+   * Missing Job
    */
   if (!job) {
 
@@ -97,8 +140,9 @@ export default function JobDetailClient({
               Job Not Found
             </h1>
 
-            <p>
-              This job may have been removed.
+            <p className="text-slate-600">
+
+              This job may have been removed or no longer exists.
             </p>
           </div>
         </div>
@@ -113,7 +157,7 @@ export default function JobDetailClient({
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-10">
 
-          {/* LEFT */}
+          {/* LEFT CONTENT */}
           <div>
 
             {/* Hero */}
@@ -153,7 +197,7 @@ export default function JobDetailClient({
                 Job Description
               </h2>
 
-              <p className="text-slate-600 whitespace-pre-wrap">
+              <p className="text-slate-600 whitespace-pre-wrap leading-8">
 
                 {job.description}
               </p>
@@ -167,7 +211,7 @@ export default function JobDetailClient({
                 Requirements
               </h2>
 
-              <p className="text-slate-600 whitespace-pre-wrap">
+              <p className="text-slate-600 whitespace-pre-wrap leading-8">
 
                 {job.requirements}
               </p>
@@ -179,7 +223,7 @@ export default function JobDetailClient({
 
             <div className="sticky top-28 space-y-6">
 
-              {/* Contact */}
+              {/* Contact Card */}
               <div className="card p-6">
 
                 <h3 className="text-xl font-bold mb-5">
@@ -212,17 +256,17 @@ export default function JobDetailClient({
                 </div>
               </div>
 
-              {/* Report */}
-              <div className="card p-6 border-red-100">
+              {/* Report Card */}
+              <div className="card p-6 border border-red-100">
 
                 <h3 className="text-lg font-bold mb-3">
 
                   Report Listing
                 </h3>
 
-                <p className="text-sm text-slate-500 mb-5">
+                <p className="text-sm text-slate-500 mb-5 leading-6">
 
-                  Help keep JobFuse safe by reporting inappropriate listings.
+                  Help keep JobFuse safe by reporting inappropriate or suspicious listings.
                 </p>
 
                 <button
@@ -243,13 +287,13 @@ export default function JobDetailClient({
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Report Modal */}
       <ReportModal
         isOpen={reportOpen}
         onClose={() =>
           setReportOpen(false)
         }
-        jobId={job.id}
+        onSubmit={handleReport}
       />
     </main>
   );

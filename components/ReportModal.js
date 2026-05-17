@@ -64,7 +64,7 @@ export default function ReportModal({
 
           <button
             onClick={() =>
-              onClose()
+              onSubmit(reason)
             }
             className="flex-1 border border-black py-3 rounded-lg"
           >
