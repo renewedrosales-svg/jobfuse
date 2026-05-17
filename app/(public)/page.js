@@ -17,6 +17,9 @@ import {
 import JobCard
 from "@/components/JobCard";
 
+import JobCardSkeleton
+from "@/components/JobCardSkeleton";
+
 import {
   getAllJobs,
 } from "@/lib/firestore";
@@ -341,15 +344,12 @@ export default function HomePage() {
 
           {/* Loading */}
           {loading && (
-
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-
-              {[1,2,3,4,5,6]
-                .map((item) => (
-
-                <div
-                  key={item}
-                  className="card p-6 animate-pulse h-64"
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {Array.from({
+                length: 6,
+              }).map((_, i) => (
+                <JobCardSkeleton
+                  key={i}
                 />
               ))}
             </div>

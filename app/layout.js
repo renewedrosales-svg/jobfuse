@@ -6,6 +6,14 @@ from "@/components/Navbar";
 import Footer
 from "@/components/Footer";
 
+import {
+  Toaster,
+} from "react-hot-toast";
+
+import {
+  Analytics,
+} from "@vercel/analytics/react";
+
 export const metadata = {
 
   metadataBase: new URL(
@@ -13,6 +21,7 @@ export const metadata = {
   ),
 
   title: {
+
     default:
       "JobFuse — Modern Job Board Platform",
 
@@ -77,15 +86,82 @@ export default function RootLayout({
 }) {
 
   return (
+
     <html lang="en">
 
-      <body>
+      <body className="bg-white text-slate-900 antialiased">
 
+        {/* Toast Notifications */}
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          gutter={12}
+          containerStyle={{
+            top: 20,
+            right: 20,
+          }}
+          toastOptions={{
+
+            duration: 4000,
+
+            style: {
+
+              background: "#ffffff",
+
+              color: "#0f172a",
+
+              borderRadius: "18px",
+
+              padding: "16px 18px",
+
+              border:
+                "1px solid #e2e8f0",
+
+              boxShadow:
+                "0 10px 30px rgba(15,23,42,0.08)",
+
+              fontSize: "14px",
+
+              fontWeight: "500",
+            },
+
+            success: {
+
+              iconTheme: {
+
+                primary: "#2563eb",
+
+                secondary: "#ffffff",
+              },
+            },
+
+            error: {
+
+              iconTheme: {
+
+                primary: "#dc2626",
+
+                secondary: "#ffffff",
+              },
+            },
+          }}
+        />
+
+        {/* Navigation */}
         <Navbar />
 
-        {children}
+        {/* Main Content */}
+        <main>
 
+          {children}
+
+        </main>
+
+        {/* Footer */}
         <Footer />
+        
+        {/* Vercel Analytics */}
+        <Analytics />
 
       </body>
     </html>

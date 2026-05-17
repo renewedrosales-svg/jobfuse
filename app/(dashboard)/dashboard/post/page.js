@@ -38,7 +38,7 @@ export default function PostJobPage() {
   const [error,
     setError] =
     useState("");
-
+  
   /**
    * Handle input
    */

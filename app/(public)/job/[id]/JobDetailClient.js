@@ -77,16 +77,7 @@ export default function JobDetailClient({
    */
   if (loading) {
 
-    return (
-      <main className="section">
-
-        <div className="container-app">
-
-          <div className="card p-10 animate-pulse h-[500px]" />
-
-        </div>
-      </main>
-    );
+    return <JobDetailSkeleton />;
   }
 
   /**
